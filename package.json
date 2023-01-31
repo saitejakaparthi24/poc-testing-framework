@@ -1,0 +1,25 @@
+{
+  "name": "poc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:prod": "node dist/index.js",
+    "start": "ts-node index.ts",
+    "build": "rimraf dist && tsc --project tsconfig.json",
+    "debug": "nodemon -L --watch ./dist --inspect=0.0.0.0:9222 --nolazy ./dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "rimraf": "^4.1.2"
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "dependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
