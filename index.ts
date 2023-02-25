@@ -1,20 +1,28 @@
+import { dependencyGraph } from "./dependencyGraph";
 import { readdirSync } from "fs";
 import { parseFile } from "./parse";
 
+const regexValidator = new RegExp(
+  /^((?!(node_modules|dist|\.vscode|\.git|\.gitignore|package-lock\.json|package\.json|parse\.ts|README\.md|tsconfig\.json|dependencyGraph\.ts)).)+/
+);
+
+const sourceFileValidator = new RegExp(/^((?!([a-zA-Z]*\.(js|map|spec|test))).)+/)
+
 const readRecursively = (currentPath: string) => {
   try {
-    const fileName = readdirSync(`${__dirname}${currentPath}`);
+    const path = `${__dirname}${currentPath}`;
+
+    const fileName = readdirSync(path);
 
     fileName.map((file) => {
       if (
-        !file.includes(".map") &&
-        !file.includes(".spec") &&
-        file !== "parse.js" &&
-        currentPath !== '' &&
-        file.substring(file.length - 3, file.length) === ".js"
+        sourceFileValidator.test(file) &&
+        currentPath !== "" &&
+        file.substring(file.length - 3, file.length) === ".ts"
       )
-        parseFile(`${__dirname}${currentPath}/${file}`);
-      readRecursively(`${currentPath}/${file}`);
+        parseFile(`${path}/${file}`);
+      if (regexValidator.test(file) && sourceFileValidator.test(file))
+        readRecursively(`${currentPath}/${file}`);
     });
   } catch (err) {
     return;
@@ -22,3 +30,5 @@ const readRecursively = (currentPath: string) => {
 };
 
 readRecursively("");
+
+console.log('\nDependency grahp: ', JSON.stringify(dependencyGraph, null, 2))

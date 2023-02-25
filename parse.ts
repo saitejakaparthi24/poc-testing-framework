@@ -1,18 +1,28 @@
 import { readFileSync } from "fs";
+import { dependencyGraph } from './dependencyGraph'
 
 interface RegexValidator {
   validator: RegExp;
-  name: 'class' | 'method' | 'constructor' | 'dependency';
+  name: "class" | "method" | "constructor" | "dependency";
 }
+
+const primitiveTypes = new RegExp(/(string|number|boolean|null|undefined|bigint)/);
 
 export const parseFile = (filePath: string) => {
   const contents = readFileSync(filePath, { encoding: "utf8", flag: "r" });
 
-  const classValidator = new RegExp(/class/);
-  const methodValidator = new RegExp(/[A-Za-z]\(/);
-  const constructorValidator = new RegExp(/constructor\(/);
+  const classValidator = new RegExp(/^class$/);
+  const methodValidator = new RegExp(/[A-Za-z]+/);
+  const constructorValidator = new RegExp(/^constructor$/);
 
-  const contentArr = contents.split(" ");
+  let contentOptimized = contents.replace(/\(/g, " ( ");
+  contentOptimized = contentOptimized.replace(/\:/g, " : ");
+  contentOptimized = contentOptimized.replace(/\{/g, " { ");
+  contentOptimized = contentOptimized.replace(/\)/g, " ) ");
+  contentOptimized = contentOptimized.replace(/\}/g, " } ");
+  contentOptimized = contentOptimized.replace(/,/g, " , ");
+  contentOptimized = contentOptimized.replace(/\s/g, "_");
+  const contentArr = contentOptimized.split("_").filter((c) => c !== "");
 
   const validators: RegexValidator[] = [
     {
@@ -34,33 +44,112 @@ export const parseFile = (filePath: string) => {
 
 const recursivelyValidate = (
   contentArr: string[],
-  validators: RegexValidator[]
+  validators: RegexValidator[],
+  className=''
 ) => {
-  if (validators.length === 0) return
+  if (validators.length === 0) return;
+
+  let skipUntilIndex = 1
 
   for (const [idx, content] of contentArr.entries()) {
-    if (validators[0].validator.test(content)) {
-      console.log(`Found a ${validators[0].name}`);
+    if (
+      (validators[0].validator.test(content) &&
+        validators[0].name !== "method") ||
+      (validators[0].validator.test(content) &&
+        validators[0].name === "method" &&
+        contentArr[idx + 1] === "(")
+    ) {
+      // console.log(`\nFound a ${validators[0].name}`);
+      if (validators[0].name === "class") {
+        console.log(`\n======================================`);
+        console.log(`\tClass name: ${contentArr[idx + 1]}`);
+        console.log(`======================================`);
 
-      if (validators[0].name === 'class')
-        console.log(`Class name is ${contentArr[idx + 1]}`);
+        skipUntilIndex = idx + 3
 
-      if (validators[0].name === 'method') {
-        const methodName = contentArr[idx].substring(0, contentArr[idx].indexOf('('))
-        console.log(`Method name is ${methodName}`);
-      }
+        // create object entry for found class
+        className = contentArr[idx + 1]
+        dependencyGraph[contentArr[idx + 1]] = {
+          attributes: [],
+          dependencies: []
+        }
+      } 
+      else if (validators[0].name === "method") {
+        const methodName = contentArr[idx]
+        let closingParenthesis = contentArr.indexOf(')')
+        let closingCurlyBracket = contentArr.indexOf('}') // this is deceiving
+        let fullMethodStatement = contentArr.slice(idx + 1, closingParenthesis + 1)
+        let parameters = fullMethodStatement.filter(s => /^((?!(\(|:|\)|,)).+)*$/.test(s))
 
-      if (validators[0].name === 'constructor') {
-        let dependencies = contentArr[idx].slice(12, contentArr[idx].length - 1)
+        console.log("----------------------------");
+        console.log(`Method name: ${methodName}`);
+        console.log("----------------------------");
+
+        let filteredParameters = parameters.filter((_, i) => i % 2 === 0)
+        let types = parameters.filter((_, i) => i % 2 !== 0)
+
+        console.log('Method parameters:')
+        filteredParameters.forEach(s => console.log(`  - ${s}:`))
+        console.log("")
+
+        console.log('Parameter types:')
+        types.forEach(s => console.log(`  - ${s}`))
+
+        dependencyGraph[className].method = {
+          name: methodName,
+          parameters: []
+        }
+
+        for (let i = 0; i < types.length; i++) {
+          dependencyGraph[className].method.parameters.push({
+            name: filteredParameters[i],
+            type: types[i]
+          })
+        } 
+
+        skipUntilIndex = closingCurlyBracket + 1
+
+      } else if (validators[0].name === "constructor") {
+        let closingParenthesis = contentArr.indexOf(')')
+        let closingCurlyBracket = contentArr.indexOf('}')
+        let fullConstructorStatement = contentArr.slice(idx, closingParenthesis + 1)
+        let dependencies = fullConstructorStatement.filter(s => /^((?!(constructor|private|public|readonly|\(|:|\)|,)).+)*$/.test(s))
         if (dependencies.length === 0) {
           console.log(`Constructor has no dependencies`);
         } else {
-          console.log(`Constructor dependencies are ${dependencies}`);
+          let filteredDependencies = dependencies.filter((_, i) => i % 2 === 0)
+          let types = dependencies.filter((_, i) => i % 2 !== 0)
+
+          console.log('Constructor dependencies:')
+          filteredDependencies.forEach(s => console.log(`  - ${s}`))
+          console.log("");
+
+          console.log('Dependencies types:')
+          types.forEach(s => console.log(`  - ${s}`));
+          console.log("");
+
+          for (let i = 0; i < types.length; i++) {
+            if (primitiveTypes.test(types[i])) {
+              dependencyGraph[className].attributes.push({
+                name: filteredDependencies[i],
+                type: types[i]
+              })
+            } else {
+              dependencyGraph[className].dependencies.push({
+                name: filteredDependencies[i],
+                type: types[i]
+              })
+            }
+          } 
         }
+
+        skipUntilIndex = closingCurlyBracket + 1
       }
 
-      let substr = contentArr.slice(idx + 1);
-      recursivelyValidate(substr, validators.slice(1));
+      break
     }
   }
+
+  let substr = contentArr.slice(skipUntilIndex);
+  recursivelyValidate(substr, validators.slice(1), className);
 };
