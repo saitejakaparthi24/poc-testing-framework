@@ -41,16 +41,15 @@ const recursivelyValidate = (
   for (const [idx, content] of contentArr.entries()) {
     if (validators[0].validator.test(content)) {
       console.log(`Found a ${validators[0].name}`);
-
       if (validators[0].name === 'class')
         console.log(`Class name is ${contentArr[idx + 1]}`);
 
-      if (validators[0].name === 'method') {
+      else if (validators[0].name === 'method') {
         const methodName = contentArr[idx].substring(0, contentArr[idx].indexOf('('))
         console.log(`Method name is ${methodName}`);
       }
 
-      if (validators[0].name === 'constructor') {
+      else if (validators[0].name === 'constructor') {
         let dependencies = contentArr[idx].slice(12, contentArr[idx].length - 1)
         if (dependencies.length === 0) {
           console.log(`Constructor has no dependencies`);
@@ -59,7 +58,7 @@ const recursivelyValidate = (
         }
       }
 
-      let substr = contentArr.slice(idx + 1);
+      let substr = contentArr.slice(idx + 2);
       recursivelyValidate(substr, validators.slice(1));
     }
   }
