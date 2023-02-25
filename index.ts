@@ -1,8 +1,9 @@
+import { dependencyGraph } from "./dependencyGraph";
 import { readdirSync } from "fs";
 import { parseFile } from "./parse";
 
 const regexValidator = new RegExp(
-  /^((?!(node_modules|dist|\.vscode|\.git|\.gitignore|package-lock\.json|package\.json|parse\.ts|README\.md|tsconfig\.json)).)+/
+  /^((?!(node_modules|dist|\.vscode|\.git|\.gitignore|package-lock\.json|package\.json|parse\.ts|README\.md|tsconfig\.json|dependencyGraph\.ts)).)+/
 );
 
 const sourceFileValidator = new RegExp(/^((?!([a-zA-Z]*\.(js|map|spec|test))).)+/)
@@ -29,3 +30,5 @@ const readRecursively = (currentPath: string) => {
 };
 
 readRecursively("");
+
+console.log('\nDependency grahp: ', JSON.stringify(dependencyGraph, null, 2))

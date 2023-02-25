@@ -1,9 +1,12 @@
 import { readFileSync } from "fs";
+import { dependencyGraph } from './dependencyGraph'
 
 interface RegexValidator {
   validator: RegExp;
   name: "class" | "method" | "constructor" | "dependency";
 }
+
+const primitiveTypes = new RegExp(/(string|number|boolean|null|undefined|bigint)/);
 
 export const parseFile = (filePath: string) => {
   const contents = readFileSync(filePath, { encoding: "utf8", flag: "r" });
@@ -41,7 +44,8 @@ export const parseFile = (filePath: string) => {
 
 const recursivelyValidate = (
   contentArr: string[],
-  validators: RegexValidator[]
+  validators: RegexValidator[],
+  className=''
 ) => {
   if (validators.length === 0) return;
 
@@ -59,6 +63,13 @@ const recursivelyValidate = (
       if (validators[0].name === "class") {
         console.log(`Class name is ${contentArr[idx + 1]}`);
         skipUntilIndex = idx + 3
+
+        // create object entry for found class
+        className = contentArr[idx + 1]
+        dependencyGraph[contentArr[idx + 1]] = {
+          attributes: [],
+          dependencies: []
+        }
       } 
       else if (validators[0].name === "method") {
         const methodName = contentArr[idx]
@@ -78,6 +89,18 @@ const recursivelyValidate = (
         console.log('\nParameter types are: \n')
         types.forEach(s => console.log(s))
 
+        dependencyGraph[className].method = {
+          name: methodName,
+          parameters: []
+        }
+
+        for (let i = 0; i < types.length; i++) {
+          dependencyGraph[className].method.parameters.push({
+            name: filteredParameters[i],
+            type: types[i]
+          })
+        } 
+
         skipUntilIndex = closingCurlyBracket + 1
 
       } else if (validators[0].name === "constructor") {
@@ -96,6 +119,20 @@ const recursivelyValidate = (
 
           console.log('\nDependencies types are: \n')
           types.forEach(s => console.log(s))
+          
+          for (let i = 0; i < types.length; i++) {
+            if (primitiveTypes.test(types[i])) {
+              dependencyGraph[className].attributes.push({
+                name: filteredDependencies[i],
+                type: types[i]
+              })
+            } else {
+              dependencyGraph[className].dependencies.push({
+                name: filteredDependencies[i],
+                type: types[i]
+              })
+            }
+          } 
         }
 
         skipUntilIndex = closingCurlyBracket + 1
@@ -106,5 +143,5 @@ const recursivelyValidate = (
   }
 
   let substr = contentArr.slice(skipUntilIndex);
-  recursivelyValidate(substr, validators.slice(1));
+  recursivelyValidate(substr, validators.slice(1), className);
 };
