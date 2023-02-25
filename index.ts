@@ -5,7 +5,7 @@ const regexValidator = new RegExp(
   /^((?!(node_modules|dist|\.vscode|\.git|\.gitignore|package-lock\.json|package\.json|parse\.ts|README\.md|tsconfig\.json)).)+/
 );
 
-const sourceFileValidator = new RegExp(/^((?!([a-zA-Z]*\.(js|map|spec))).)+/)
+const sourceFileValidator = new RegExp(/^((?!([a-zA-Z]*\.(js|map|spec|test))).)+/)
 
 const readRecursively = (currentPath: string) => {
   try {
