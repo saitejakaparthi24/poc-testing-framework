@@ -55,9 +55,12 @@ const recursivelyValidate = (
         validators[0].name === "method" &&
         contentArr[idx + 1] === "(")
     ) {
-      console.log(`\nFound a ${validators[0].name}`);
+      // console.log(`\nFound a ${validators[0].name}`);
       if (validators[0].name === "class") {
-        console.log(`Class name is ${contentArr[idx + 1]}`);
+        console.log(`\n======================================`);
+        console.log(`\tClass name: ${contentArr[idx + 1]}`);
+        console.log(`======================================`);
+
         skipUntilIndex = idx + 3
       } 
       else if (validators[0].name === "method") {
@@ -67,16 +70,19 @@ const recursivelyValidate = (
         let fullMethodStatement = contentArr.slice(idx + 1, closingParenthesis + 1)
         let parameters = fullMethodStatement.filter(s => /^((?!(\(|:|\)|,)).+)*$/.test(s))
 
-        console.log(`Method name is ${methodName}`);
+        console.log("----------------------------");
+        console.log(`Method name: ${methodName}`);
+        console.log("----------------------------");
 
         let filteredParameters = parameters.filter((_, i) => i % 2 === 0)
         let types = parameters.filter((_, i) => i % 2 !== 0)
 
-        console.log('\nMethod parameters are: \n')
-        filteredParameters.forEach(s => console.log(s))
+        console.log('Method parameters:')
+        filteredParameters.forEach(s => console.log(`  - ${s}:`))
+        console.log("")
 
-        console.log('\nParameter types are: \n')
-        types.forEach(s => console.log(s))
+        console.log('Parameter types:')
+        types.forEach(s => console.log(`  - ${s}`))
 
         skipUntilIndex = closingCurlyBracket + 1
 
@@ -91,11 +97,15 @@ const recursivelyValidate = (
           let filteredDependencies = dependencies.filter((_, i) => i % 2 === 0)
           let types = dependencies.filter((_, i) => i % 2 !== 0)
 
-          console.log('\nConstructor dependencies are: \n')
-          filteredDependencies.forEach(s => console.log(s))
+          console.log('Constructor dependencies:')
+          // filteredDependencies.forEach(s => console.log(s))
+          filteredDependencies.forEach(s => console.log(`  - ${s}`))
+          console.log("");
 
-          console.log('\nDependencies types are: \n')
-          types.forEach(s => console.log(s))
+          console.log('Dependencies types:')
+          // types.forEach(s => console.log(s))
+          types.forEach(s => console.log(`  - ${s}`));
+          console.log("");
         }
 
         skipUntilIndex = closingCurlyBracket + 1
