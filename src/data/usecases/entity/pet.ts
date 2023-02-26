@@ -3,9 +3,9 @@ export class      Pet {
 
   cry(sound:string):   string {
     if (this.breed === 'cavapoo') {
-      return `${this.name} says: ${sound}!`
+      return `${this.name}says:${sound}!`
     } else {
-      return `${this.name} says: ${sound} \n raaar!`
+      return `${this.name}says:${sound}raaar!`
     }
   }
 }
