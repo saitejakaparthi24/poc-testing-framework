@@ -1,5 +1,7 @@
-import { dependencyGraph } from "./dependencyGraph";
 import { readdirSync } from "fs";
+import  { execSync } from 'child_process';
+
+import { dependencyGraph } from "./dependencyGraph";
 import { parseFile } from "./parse";
 
 const regexValidator = new RegExp(
@@ -32,3 +34,6 @@ const readRecursively = (currentPath: string) => {
 readRecursively("");
 
 console.log('\nDependency grahp: ', JSON.stringify(dependencyGraph, null, 2))
+
+console.log('\nRunning test cases...')
+execSync('npm run test')
