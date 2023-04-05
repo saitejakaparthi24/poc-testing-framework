@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Detect operating system
-os=$(uname -s | tr '[:upper:]' '[:lower:]')
-
 # Check if Node.js is already installed
 if command -v node &> /dev/null
 then
