@@ -51,6 +51,8 @@ export const parseFile = (filePath: string) => {
   contentOptimized = contentOptimized.replace(/\)/g, " ) ");
   contentOptimized = contentOptimized.replace(/\}/g, " } ");
   contentOptimized = contentOptimized.replace(/,/g, " , ");
+  contentOptimized = contentOptimized.replace(/\$/g, " $ ");
+  contentOptimized = contentOptimized.replace(/!/g, " ! ");
   contentOptimized = contentOptimized.replace(/\s/g, "_");
   const contentArr = contentOptimized.split("_").filter((c) => c !== "");
 
@@ -265,16 +267,8 @@ const parseMethodBody = (
           switch (contentArr[idx]) {
             case "return": {
               const openingBackTick = idx + 1;
-              let closingBackTick: number;
-
-              const contentCopy = contentArr.slice(openingBackTick + 1);
-              for (let k = 0; k < contentCopy.length; k++) {
-                if (contentCopy[k].replace(/((?!(`)).)+/, "") === "`") {
-                  closingBackTick = openingBackTick + k + 1;
-                  break;
-                }
-              }
-
+              let closingBackTick = openingBackTick + contentArr.slice(openingBackTick + 1).indexOf("`") + 1;
+              
               const fullReturnStatement = contentArr.slice(
                 openingBackTick,
                 closingBackTick + 1

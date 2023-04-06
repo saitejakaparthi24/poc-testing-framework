@@ -30,7 +30,6 @@
     "graphviz": "^0.0.9",
     "install": "^0.13.0",
     "nodemon": "^2.0.20",
-    "npm": "^9.6.3",
     "ts-graphviz": "^1.5.5",
     "ts-morph": "^18.0.0"
   }
