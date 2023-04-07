@@ -5,6 +5,7 @@ const makeSut = (name: string,breed: string): { sut: Pet} => {
 }
 
 describe('Pet class', () => {
+describe('cry method', () => {
 	const name = 'any_name'
 	const breed = 'any_breed'
 	const sound = 'any_sound'
@@ -22,7 +23,49 @@ describe('Pet class', () => {
 
     expect(result).toBe(`${name}says:${sound}raaar!`)
   })
+}}
 
+  describe('intro method', () => {
+    const name = 'any_name';
 
+    test('should return expected string when breed is cavapoo', () => {
+      const breed = 'cavapoo';
+      const sound = 'any_sound';
+      const pet = new Pet(name, breed);
+      const result = pet.intro(sound);
+      expect(result).toBe(`${name} says: ${sound}!`);
+    })
 
+    test('should return expected string when breed is canine', () => {
+      const breed = 'canine';
+      const sound = 'any_sound';
+      const pet = new Pet(name, breed);
+      const result = pet.intro(sound);
+      expect(result).toBe(`${name} says: ${sound}!`);
+    })
+
+    test('should return expected string when breed is poodles', () => {
+      const breed = 'poodles';
+      const sound = 'any_sound';
+      const pet = new Pet(name, breed);
+      const result = pet.intro(sound);
+      expect(result).toBe(`${name} says: ${sound}!`);
+    })
+
+    test('should return expected string when breed is bulldogs', () => {
+      const breed = 'bulldogs';
+      const sound = 'any_sound';
+      const pet = new Pet(name, breed);
+      const result = pet.intro(sound);
+      expect(result).toBe(`${name} says: ${sound}!`);
+    })
+
+    test('should return default string when breed is unknown', () => {
+      const breed = 'unknown';
+      const sound = 'any_sound';
+      const pet = new Pet(name, breed);
+      const result = pet.intro(sound);
+      expect(result).toBe(`${name} says: ${sound} default sound!`);
+    })
+  })
 })
